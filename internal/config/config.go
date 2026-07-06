@@ -3,12 +3,12 @@ package config
 import "os"
 
 type Config struct {
-	port string
+	Port string
 }
 
 func LoadConfig() *Config {
 	cfg := &Config{
-		port: getEnv("PORT", "8080"),
+		Port: getEnv("PORT", "8080"),
 	}
 
 	return cfg
