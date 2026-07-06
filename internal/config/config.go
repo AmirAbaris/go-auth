@@ -3,12 +3,14 @@ package config
 import "os"
 
 type Config struct {
-	Port string
+	Port  string
+	DBUrl string
 }
 
 func LoadConfig() *Config {
 	cfg := &Config{
-		Port: getEnv("PORT", "8080"),
+		Port:  getEnv("PORT", "8080"),
+		DBUrl: getEnv("DATABASE_URL", "postgres://amirabaris@localhost:5432/goauth?sslmode=disable"),
 	}
 
 	return cfg

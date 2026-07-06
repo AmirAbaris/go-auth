@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,6 +12,7 @@ import (
 	"time"
 
 	"github.com/amirabaris/go-auth/internal/config"
+	"github.com/amirabaris/go-auth/internal/db"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -21,6 +23,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func main() {
 	// 1. handle config
 	cfg := config.LoadConfig()
+
+	pool, err := db.NewPool(context.Background(), cfg)
+	if err != nil {
+		slog.Error("db", "err", err)
+		os.Exit(1)
+	}
+
+	defer pool.Close()
+
 	// 2. handle mux
 	mux := http.NewServeMux()
 	// 3. hande routes
