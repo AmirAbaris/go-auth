@@ -13,12 +13,9 @@ import (
 
 	"github.com/amirabaris/go-auth/internal/config"
 	"github.com/amirabaris/go-auth/internal/db"
+	"github.com/amirabaris/go-auth/internal/handler/auth"
+	"github.com/amirabaris/go-auth/internal/service"
 )
-
-func handler(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("hello"))
-
-}
 
 func main() {
 	// 1. handle config
@@ -32,10 +29,15 @@ func main() {
 
 	defer pool.Close()
 
+	queries := db.New(pool)
+
+	authService := service.New(queries, cfg)
+	authHandler := auth.New(authService)
+
 	// 2. handle mux
 	mux := http.NewServeMux()
 	// 3. hande routes
-	mux.HandleFunc("GET /hi", handler)
+	mux.HandleFunc("POST /register", authHandler.Register)
 
 	// 4. config server struct
 	server := &http.Server{

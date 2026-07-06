@@ -19,20 +19,20 @@ func New(q *db.Queries, cfg *config.Config) *Service {
 	return &Service{q: q, cfg: cfg}
 }
 
-func (s *Service) Register(ctx context.Context, email, password string) (db.User, error) {
+func (s *Service) Register(ctx context.Context, email, password string) (string, error) {
 	email, err := validateCredentials(email, password)
 	if err != nil {
-		return db.User{}, ErrInvalidCredentials
+		return "", ErrInvalidCredentials
 	}
 	if _, err := s.q.GetUserByEmail(ctx, email); err == nil {
-		return db.User{}, ErrEmailAlreadyExists
+		return "", ErrEmailAlreadyExists
 	} else if !errors.Is(err, pgx.ErrNoRows) {
-		return db.User{}, err
+		return "", err
 	}
 
 	hashedPassword, err := crypto.HashPassword(password)
 	if err != nil {
-		return db.User{}, ErrInvalidCredentials
+		return "", ErrInvalidCredentials
 	}
 
 	user, err := s.q.CreateUser(ctx, db.CreateUserParams{
@@ -40,15 +40,15 @@ func (s *Service) Register(ctx context.Context, email, password string) (db.User
 		Password: hashedPassword,
 	})
 	if err != nil {
-		return db.User{}, err
+		return "", err
 	}
 
-	_, error := GenerateToken(user.ID, s.cfg.JWTSecret)
+	token, error := GenerateToken(user.ID, s.cfg.JWTSecret)
 	if error != nil {
-		return db.User{}, err
+		return "", err
 	}
 
-	return user, nil
+	return token, nil
 
 }
 
