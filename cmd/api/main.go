@@ -14,6 +14,7 @@ import (
 	"github.com/amirabaris/go-auth/internal/config"
 	"github.com/amirabaris/go-auth/internal/db"
 	"github.com/amirabaris/go-auth/internal/handler/auth"
+	"github.com/amirabaris/go-auth/internal/middleware"
 	"github.com/amirabaris/go-auth/internal/service"
 )
 
@@ -37,6 +38,8 @@ func main() {
 	// 2. handle mux
 	mux := http.NewServeMux()
 	// 3. hande routes
+
+	_ = middleware.Auth(cfg.JWTSecret)
 	mux.HandleFunc("POST /register", authHandler.Register)
 
 	// 4. config server struct

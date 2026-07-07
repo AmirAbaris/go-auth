@@ -28,6 +28,27 @@ func GenerateToken(userID pgtype.UUID, secret string) (string, error) {
 	return token.SignedString([]byte(secret))
 }
 
+func ParseToken(tokenString, secret string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(
+		tokenString,
+		&Claims{},
+		func(t *jwt.Token) (any, error) {
+			return []byte(secret), nil
+		},
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	claims, ok := token.Claims.(*Claims)
+	if !ok || !token.Valid {
+		return nil, jwt.ErrTokenInvalidClaims
+	}
+
+	return claims, nil
+}
+
 func uuidToString(id pgtype.UUID) string {
 	if !id.Valid {
 		return ""
